@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:elixir/theme.dart';
 import 'package:elixir/api.dart';
-import 'package:elixir/view/components/answer_widget.dart';
-import 'package:elixir/view/components/loading_widget.dart';
-import 'package:elixir/view/components/text_input_widget.dart';
-import 'package:elixir/view/components/user_question_widget.dart';
+import 'package:elixir/components/answer_widget.dart';
+import 'package:elixir/components/loading_widget.dart';
+import 'package:elixir/components/text_input_widget.dart';
+import 'package:elixir/components/user_question_widget.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen(
