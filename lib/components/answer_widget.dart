@@ -46,6 +46,10 @@ class AnswerWidget extends StatelessWidget {
             ),
             child: Column(
               children: [
+                if (images.isNotEmpty) getImagesWidget(images),
+                const SizedBox(
+                  height: 8,
+                ),
                 MarkdownViewer(
                   answer,
                   enableTaskList: true,
@@ -73,67 +77,7 @@ class AnswerWidget extends StatelessWidget {
                 const SizedBox(
                   height: 8,
                 ),
-                if (sources.isNotEmpty)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Sources",
-                        style: kWhiteText.copyWith(
-                            fontSize: 16,
-                            fontWeight: kSemiBold,
-                            color: Colors.red),
-                      ),
-                      const SizedBox(
-                        height: 8,
-                      ),
-                      for (var source in sources.entries)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.link,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  source.key + ": " + source.value.join(", "),
-                                  style: kWhiteText.copyWith(
-                                      fontSize: 14, fontWeight: kRegular),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                const SizedBox(
-                  height: 8,
-                ),
-                if (images.isNotEmpty)
-                  Row(
-                    children: [
-                      for (var image in images)
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: Colors.white,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Image.network(
-                              getImageUrl(image),
-                              height: 500,
-                              fit: BoxFit.fitHeight,
-                            ),
-                          ),
-                        ),
-                    ],
-                  )
+                if (sources.isNotEmpty) getSourcesWidget(sources),
               ],
             ),
           ),
@@ -141,4 +85,80 @@ class AnswerWidget extends StatelessWidget {
       ],
     );
   }
+}
+
+RawScrollbar getImagesWidget(List images) {
+  final ScrollController scrollController = ScrollController();
+
+  return RawScrollbar(
+    controller: scrollController,
+    thumbVisibility: true,
+    trackVisibility: true,
+    thumbColor: kWhiteColor,
+    trackColor: kBg100Color,
+    radius: const Radius.circular(4),
+    trackRadius: const Radius.circular(4),
+    child: SingleChildScrollView(
+      controller: scrollController,
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (var image in images)
+            Container(
+              margin: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Image.network(
+                  getImageUrl(image),
+                  height: 300,
+                  fit: BoxFit.fitHeight,
+                ),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
+Column getSourcesWidget(Map sources) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        "Sources",
+        style: kWhiteText.copyWith(
+            fontSize: 16, fontWeight: kSemiBold, color: Colors.green),
+      ),
+      const SizedBox(
+        height: 8,
+      ),
+      for (var source in sources.entries)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.link,
+                color: Colors.white,
+                size: 16,
+              ),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  source.key + ": " + source.value.join(", "),
+                  style:
+                      kWhiteText.copyWith(fontSize: 14, fontWeight: kRegular),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+    ],
+  );
 }

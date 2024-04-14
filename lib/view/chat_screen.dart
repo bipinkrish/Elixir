@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:elixir/theme.dart';
 import 'package:elixir/api.dart';
 import 'package:elixir/components/answer_widget.dart';
@@ -18,7 +19,10 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  bool loadingNotifier = false;
+  bool inProgress = false;
+  Map inProgressData = {};
+  String inProgressResponse = "";
+
   late ScrollController scrollController;
   late TextEditingController inputQuestionController;
   List<Map<String, String>> history = [];
@@ -32,6 +36,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
   addUserQuestion(String question) {
     history.add({'role': 'user', 'message': question});
+  }
+
+  addAiResponse(String result, Map others) {
+    others["results"] = result;
+    history.add({'role': 'assistant', 'message': jsonEncode(others)});
   }
 
   @override
@@ -113,7 +122,18 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Column(
           children: [
             buildChatList(),
-            if (loadingNotifier) const LoadingWidget(),
+            if (inProgress)
+              LoadingWidget(
+                inProgressResponse: inProgressResponse,
+                inProgressData: inProgressData,
+              ),
+            // Align(
+            //   alignment: Alignment.bottomRight,
+            //   child: IconButton(
+            //     onPressed: _scrollToBottom,
+            //     icon: const Icon(Icons.arrow_downward_rounded),
+            //   ),
+            // ),
             TextInputWidget(
               textController: inputQuestionController,
               onSubmitted: () => _sendMessage(),
@@ -127,44 +147,53 @@ class _ChatScreenState extends State<ChatScreen> {
   Expanded buildChatList() {
     return history.isNotEmpty
         ? Expanded(
-            child: ListView.separated(
+            child: RawScrollbar(
+              thumbVisibility: true,
+              trackVisibility: true,
+              thumbColor: kWhiteColor,
+              trackColor: kBg100Color,
+              radius: const Radius.circular(4),
+              trackRadius: const Radius.circular(4),
               controller: scrollController,
-              separatorBuilder: (context, index) => const SizedBox(
-                height: 12,
+              child: ListView.separated(
+                controller: scrollController,
+                separatorBuilder: (context, index) => const SizedBox(
+                  height: 12,
+                ),
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.only(
+                    bottom: 20, left: 16, right: 16, top: 16),
+                itemCount: history.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final thishistory = history[index];
+                  final isUser = thishistory['role'] == 'user';
+                  String msg = "";
+                  Map sources = {};
+                  List images = [];
+
+                  if (isUser) {
+                    msg = thishistory['message']!;
+                  } else {
+                    final jsondata = jsonDecode(thishistory['message']!);
+                    msg = jsondata['results'];
+                    sources = jsondata['source'];
+                    images = jsondata['images'] ?? jsondata['imgs'];
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      isUser
+                          ? UserQuestionWidget(question: msg)
+                          : AnswerWidget(
+                              answer: msg,
+                              sources: sources,
+                              images: images,
+                            ),
+                    ],
+                  );
+                },
               ),
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(
-                  bottom: 20, left: 16, right: 16, top: 16),
-              itemCount: history.length,
-              itemBuilder: (BuildContext context, int index) {
-                final thishistory = history[index];
-                final isUser = thishistory['role'] == 'user';
-                String msg = "";
-                Map sources = {};
-                List images = [];
-
-                if (isUser) {
-                  msg = thishistory['message']!;
-                } else {
-                  final jsondata = jsonDecode(thishistory['message']!);
-                  msg = jsondata['results'];
-                  sources = jsondata['source'];
-                  images = jsondata['images'] ?? jsondata['imgs'];
-                }
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    isUser
-                        ? UserQuestionWidget(question: msg)
-                        : AnswerWidget(
-                            answer: msg,
-                            sources: sources,
-                            images: images,
-                          ),
-                  ],
-                );
-              },
             ),
           )
         : Expanded(
@@ -187,12 +216,58 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  void handleStremedResponse(Uri url) async {
+    void onComplete() {
+      addAiResponse(inProgressResponse, inProgressData);
+      inProgress = false;
+      inProgressResponse = "";
+      inProgressData = {};
+      _scrollToBottom();
+      refresh();
+    }
+
+    try {
+      final request = http.StreamedRequest('GET', url)..sink.close();
+      final response = await request.send();
+      bool firstResponse = true;
+
+      response.stream.listen(
+        (List<int> event) {
+          if (!(event.length == 2 && event[0] == 13 && event[1] == 10)) {
+            if (firstResponse) {
+              firstResponse = false;
+              inProgressData = jsonDecode(utf8.decode(event));
+              //   debugPrint(inProgressData.toString());
+            } else {
+              inProgressResponse += utf8.decode(event);
+              //   debugPrint(inProgressResponse);
+            }
+            refresh();
+          }
+        },
+        onDone: onComplete,
+        onError: (error) {
+          debugPrint('Error: $error');
+          onComplete();
+        },
+        cancelOnError: true,
+      );
+    } catch (e) {
+      debugPrint('Error: $e');
+      onComplete();
+    } finally {}
+  }
+
   void _sendMessage() async {
     final question = inputQuestionController.text;
     inputQuestionController.clear();
-    loadingNotifier = true;
+
     addUserQuestion(question);
+    handleStremedResponse(getChatUrl(widget.sessionId, question));
+
     _scrollToBottom();
+    inProgress = true;
+
     refresh();
   }
 

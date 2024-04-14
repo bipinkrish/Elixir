@@ -3,11 +3,17 @@ import 'package:http/http.dart' as http;
 
 const String baseUrl = "http://192.168.1.13:8000";
 
-Future<Map<String, dynamic>> newSession(String sessionName) async {
+Future<Map<String, String>> newSession(String sessionName) async {
   final response = await http.post(
     Uri.parse('$baseUrl/new_session?session_name=$sessionName'),
   );
-  return jsonDecode(response.body);
+  final Map responseJson = jsonDecode(response.body);
+  final Map<String, String> data = {};
+
+  responseJson.forEach((key, value) {
+    data[key.toString()] = value.toString();
+  });
+  return data;
 }
 
 Future<List<Map<String, String>>> listSessions() async {
@@ -108,4 +114,9 @@ Future<Map<String, dynamic>> clearChatHistory(String sessionId) async {
 
 String getImageUrl(String fileId) {
   return '$baseUrl/get_image?file_id=$fileId';
+}
+
+Uri getChatUrl(String sessionID, String message) {
+  return Uri.parse(
+      '$baseUrl/chat_with_file?session_id_or_name=$sessionID&message=$message');
 }

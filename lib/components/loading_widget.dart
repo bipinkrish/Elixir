@@ -1,12 +1,23 @@
 import 'package:elixir/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:elixir/components/answer_widget.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 
 class LoadingWidget extends StatelessWidget {
-  const LoadingWidget({super.key});
+  final String inProgressResponse;
+  final Map inProgressData;
+
+  const LoadingWidget({
+    super.key,
+    required this.inProgressResponse,
+    required this.inProgressData,
+  });
 
   @override
   Widget build(BuildContext context) {
+    Map sources = inProgressData["sources"] ?? {};
+    List images = inProgressData["images"] ?? [];
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20, left: 16, right: 16, top: 16),
       child: Row(
@@ -17,9 +28,8 @@ class LoadingWidget extends StatelessWidget {
                 height: 32, width: 32, child: Image.asset("assets/logo.png")),
           ),
           const SizedBox(width: 12),
-          Container(
-              width: 128,
-              height: 128,
+          Flexible(
+            child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               margin: const EdgeInsets.only(right: 12),
               decoration: BoxDecoration(
@@ -38,7 +48,28 @@ class LoadingWidget extends StatelessWidget {
                   ),
                 ],
               ),
-              child: getPackman())
+              child: Column(
+                children: [
+                  if (images.isNotEmpty) getImagesWidget(images),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  if (inProgressResponse.isNotEmpty)
+                    Text(
+                      inProgressResponse,
+                      style: kWhiteText.copyWith(
+                          fontSize: 16, fontWeight: kRegular),
+                    ),
+                  if (inProgressResponse.isEmpty)
+                    SizedBox(width: 128, height: 128, child: getPackman()),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  if (sources.isNotEmpty) getSourcesWidget(sources),
+                ],
+              ),
+            ),
+          )
         ],
       ),
     );

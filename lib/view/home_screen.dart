@@ -40,9 +40,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  InkWell getCard(String name, double width, double height) {
+  InkWell getCard(
+      String name, double width, double height, void Function() pressed) {
     return InkWell(
-      onTap: () {},
+      onTap: pressed,
       child: Container(
         width: width,
         height: height,
@@ -102,8 +103,26 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              getCard("Chat with PDF", width * 0.4, height * 0.2),
-              getCard("Chat without PDF", width * 0.4, height * 0.2),
+              getCard("Chat with PDF", width * 0.4, height * 0.2, () {}),
+              getCard("Chat without PDF", width * 0.4, height * 0.2, () async {
+                String? sessionName = await showAskSessionName();
+                if (sessionName != null) {
+                  newSession(sessionName).then((value) {
+                    setState(() {
+                      sessions.add(value);
+                    });
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatScreen(
+                          sessionId: value['session_id']!,
+                          sessions: sessions,
+                        ),
+                      ),
+                    );
+                  });
+                }
+              }),
             ],
           ),
           const SizedBox(
@@ -148,6 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                           child: ListTile(
+                            hoverColor: kBg100Color,
                             title: Text(sessions[index]['session_name']!),
                             titleTextStyle: kWhiteText.copyWith(
                               fontSize: 20,
@@ -158,7 +178,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 showDeleteConfirmationDialog(
                                     sessions[index]['session_id']!);
                               },
-                              icon: const Icon(Icons.delete),
+                              icon: const Icon(Icons.delete_rounded),
+                              hoverColor: Colors.red,
                               color: kWhiteColor,
                             ),
                             onTap: () {
@@ -182,6 +203,41 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
         ],
       ),
+    );
+  }
+
+  Future<String?> showAskSessionName() {
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        String name = '';
+        return AlertDialog(
+          title: const Text('Enter name for session'),
+          content: TextField(
+            onChanged: (value) {
+              name = value;
+            },
+            onSubmitted: (value) => Navigator.of(context).pop(value),
+            decoration: const InputDecoration(
+              hintText: 'Enter name',
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              child: const Text('Submit'),
+              onPressed: () {
+                Navigator.of(context).pop(name);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 

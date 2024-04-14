@@ -75,9 +75,9 @@ class TextInputWidget extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 12, right: 12),
             decoration: const BoxDecoration(
                 color: kPrimaryColor, shape: BoxShape.circle),
-            child: GestureDetector(
-              onTap: onSubmitted,
-              child: const Icon(
+            child: IconButton(
+              onPressed: onSubmitted,
+              icon: const Icon(
                 Icons.send_rounded,
                 color: Colors.white,
               ),
