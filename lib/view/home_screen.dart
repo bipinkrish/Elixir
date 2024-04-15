@@ -1,7 +1,9 @@
+import 'package:elixir/components/loading_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:elixir/theme.dart';
 import 'package:elixir/api.dart';
 import 'package:elixir/view/chat_screen.dart';
+import 'package:file_picker/file_picker.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,19 +15,18 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, String>> sessions = [];
   final ScrollController _scrollController = ScrollController();
+  bool fileUploading = false;
 
   getSessions() {
     listSessions().then((value) {
-      setState(() {
-        sessions = value;
-      });
+      sessions = value;
+      refresh();
     });
   }
 
   removeSession(String sessionId) {
-    setState(() {
-      sessions.removeWhere((element) => element['session_id'] == sessionId);
-    });
+    sessions.removeWhere((element) => element['session_id'] == sessionId);
+    refresh();
   }
 
   @override
@@ -80,6 +81,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (fileUploading) {
+      return getMainLoading();
+    }
+
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
 
@@ -103,26 +108,43 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              getCard("Chat with PDF", width * 0.4, height * 0.2, () {}),
-              getCard("Chat without PDF", width * 0.4, height * 0.2, () async {
-                String? sessionName = await showAskSessionName();
-                if (sessionName != null) {
-                  newSession(sessionName).then((value) {
-                    setState(() {
-                      sessions.add(value);
+              getCard("Chat with PDF", width * 0.4, height * 0.2, () async {
+                final file = await FilePicker.platform.pickFiles(
+                  allowMultiple: false,
+                  type: FileType.custom,
+                  allowedExtensions: ['pdf'],
+                  withData: true,
+                );
+                if (file != null) {
+                  String? sessionName = await showAskSessionName();
+                  if (sessionName != null && sessionName.isNotEmpty) {
+                    final newCreated = await newSession(sessionName);
+                    sessions.add(newCreated);
+                    fileUploading = true;
+                    refresh();
+                    uploadFile(
+                      newCreated["session_id"]!,
+                      file.names.first!,
+                      file.files.first.bytes!,
+                    ).then((value) {
+                      fileUploading = false;
+                      refresh();
+                      gotoChatScreen(newCreated['session_id']!, sessions);
                     });
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ChatScreen(
-                          sessionId: value['session_id']!,
-                          sessions: sessions,
-                        ),
-                      ),
-                    );
-                  });
+                  }
                 }
               }),
+              getCard(
+                "Chat without PDF",
+                width * 0.4,
+                height * 0.2,
+                () async {
+                  String? sessionName = await showAskSessionName();
+                  if (sessionName != null && sessionName.isNotEmpty) {
+                    createNewsessionAndGo(sessionName);
+                  }
+                },
+              ),
             ],
           ),
           const SizedBox(
@@ -176,21 +198,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             trailing: IconButton(
                               onPressed: () {
                                 showDeleteConfirmationDialog(
-                                    sessions[index]['session_id']!);
+                                  sessions[index]['session_id']!,
+                                );
                               },
                               icon: const Icon(Icons.delete_rounded),
                               hoverColor: Colors.red,
                               color: kWhiteColor,
                             ),
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ChatScreen(
-                                    sessionId: sessions[index]['session_id']!,
-                                    sessions: sessions,
-                                  ),
-                                ),
+                              gotoChatScreen(
+                                sessions[index]['session_id']!,
+                                sessions,
                               );
                             },
                           ),
@@ -202,6 +220,27 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  void createNewsessionAndGo(String sessionName) {
+    newSession(sessionName).then((value) {
+      sessions.add(value);
+      refresh();
+      gotoChatScreen(value['session_id']!, sessions);
+    });
+  }
+
+  void gotoChatScreen(
+      String sessionID, List<Map<String, String>> sessionsList) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatScreen(
+          sessionId: sessionID,
+          sessions: sessionsList,
+        ),
       ),
     );
   }
@@ -241,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  showDeleteConfirmationDialog(String sessionId) {
+  void showDeleteConfirmationDialog(String sessionId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -268,5 +307,38 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     );
+  }
+
+  Scaffold getMainLoading() {
+    return Scaffold(
+      backgroundColor: kBg500Color,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 200,
+              height: 200,
+              child: getPackman(),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Processing file...',
+              style: kWhiteText.copyWith(
+                fontWeight: kRegular,
+                fontSize: 24,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void refresh() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 }

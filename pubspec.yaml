@@ -40,6 +40,7 @@ dependencies:
   markdown_viewer: ^0.6.2
   flutter_svg: ^2.0.10+1
   loading_indicator: ^3.1.1
+  file_picker: ^8.0.0+1
 
 dev_dependencies:
   flutter_test:

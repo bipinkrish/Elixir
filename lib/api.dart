@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
-const String baseUrl = "http://192.168.1.13:8000";
+const String baseUrl =
+    "https://3fb2-36-255-87-134.ngrok-free.app"; // "http://192.168.1.13:8000";
 
 Future<Map<String, String>> newSession(String sessionName) async {
-  final response = await http.post(
+  final response = await http.get(
     Uri.parse('$baseUrl/new_session?session_name=$sessionName'),
   );
   final Map responseJson = jsonDecode(response.body);
@@ -38,54 +40,16 @@ Future<Map<String, dynamic>> deleteSessionById(String sessionId) async {
   return jsonDecode(response.body);
 }
 
-Future<Map<String, dynamic>> availableModels() async {
-  final response = await http.get(Uri.parse('$baseUrl/available_models'));
-  return jsonDecode(response.body);
-}
-
-Future<Map<String, dynamic>> chat(String sessionId, String message) async {
-  final response = await http.get(Uri.parse(
-      '$baseUrl/chat?session_id_or_name=$sessionId&message=$message'));
-  return jsonDecode(response.body);
-}
-
-Future<Map<String, dynamic>> uploadFile(String sessionId, dynamic item) async {
+Future<Map<String, dynamic>> uploadFile(
+    String sessionId, String fileName, Uint8List content) async {
   final response = await http.post(
-    Uri.parse('$baseUrl/upload_file?session_id_or_name=$sessionId'),
-    body: item,
+    Uri.parse('$baseUrl/upload_file'),
+    body: {
+      "session_id_or_name": sessionId,
+      "filename": fileName,
+      "file": content.toString(),
+    },
   );
-  return jsonDecode(response.body);
-}
-
-Future<Map<String, dynamic>> listFiles(String sessionIdOrName) async {
-  final response = await http.get(
-      Uri.parse('$baseUrl/list_files?session_id_or_name=$sessionIdOrName'));
-  return jsonDecode(response.body);
-}
-
-Future<Map<String, dynamic>> deleteFile(
-    String sessionIdOrName, String fileId) async {
-  final response = await http.get(Uri.parse(
-      '$baseUrl/delete_file?session_id_or_name=$sessionIdOrName&file_id=$fileId'));
-  return jsonDecode(response.body);
-}
-
-Future<Map<String, dynamic>> deleteAllFiles(String sessionIdOrName) async {
-  final response = await http.get(Uri.parse(
-      '$baseUrl/delete_all_files?session_id_or_name=$sessionIdOrName'));
-  return jsonDecode(response.body);
-}
-
-Future<Map<String, dynamic>> fileSearch(String fileId, String search) async {
-  final response = await http
-      .get(Uri.parse('$baseUrl/file_search?file_id=$fileId&search=$search'));
-  return jsonDecode(response.body);
-}
-
-Future<Map<String, dynamic>> chatWithFile(
-    String sessionIdOrName, String message) async {
-  final response = await http.get(Uri.parse(
-      '$baseUrl/chat_with_file?session_id_or_name=$sessionIdOrName&message=$message'));
   return jsonDecode(response.body);
 }
 
@@ -104,12 +68,6 @@ Future<List<Map<String, String>>> getChatHistory(String sessionId) async {
   }
 
   return history;
-}
-
-Future<Map<String, dynamic>> clearChatHistory(String sessionId) async {
-  final response = await http.get(
-      Uri.parse('$baseUrl/clear_chat_history?session_id_or_name=$sessionId'));
-  return jsonDecode(response.body);
 }
 
 String getImageUrl(String fileId) {
