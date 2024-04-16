@@ -245,7 +245,7 @@ jobs:
         run: flutter build windows
 
       - name: Zip compiled files
-        run: Compress-Archive -Path build/windows/runner/Release/* -DestinationPath Elixir.zip
+        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath Elixir.zip
 
       - name: Upload zip
         uses: actions/upload-artifact@v3
