@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
 const String baseUrl =
-    "https://3fb2-36-255-87-134.ngrok-free.app"; // "http://192.168.1.13:8000";
+    "https://b057-2401-4900-1cbc-3352-e05f-7191-b5d1-8a8d.ngrok-free.app"; // "http://192.168.1.13:8000";
 
 Future<Map<String, String>> newSession(String sessionName) async {
   final response = await http.get(
@@ -40,17 +40,26 @@ Future<Map<String, dynamic>> deleteSessionById(String sessionId) async {
   return jsonDecode(response.body);
 }
 
-Future<Map<String, dynamic>> uploadFile(
+Future<int> uploadFile(
     String sessionId, String fileName, Uint8List content) async {
-  final response = await http.post(
+  final headers = {
+    'accept': 'application/json',
+    'Content-Type': 'application/json'
+  };
+  final request = http.Request(
+    'POST',
     Uri.parse('$baseUrl/upload_file'),
-    body: {
-      "session_id_or_name": sessionId,
-      "filename": fileName,
-      "file": content.toString(),
-    },
   );
-  return jsonDecode(response.body);
+
+  request.body = json.encode({
+    "session_id_or_name": sessionId,
+    "filename": fileName,
+    "file": content.toString(),
+  });
+  request.headers.addAll(headers);
+
+  http.StreamedResponse response = await request.send();
+  return response.statusCode;
 }
 
 Future<List<Map<String, String>>> getChatHistory(String sessionId) async {

@@ -233,13 +233,15 @@ class _ChatScreenState extends State<ChatScreen> {
 
       response.stream.listen(
         (List<int> event) {
-          if (!(event.length == 2 && event[0] == 13 && event[1] == 10)) {
+          if (!(event.length == 3 && event[1] == 13 && event[2] == 10)) {
             if (firstResponse) {
               firstResponse = false;
+
               inProgressData = jsonDecode(utf8.decode(event));
               //   debugPrint(inProgressData.toString());
             } else {
-              inProgressResponse += utf8.decode(event);
+              inProgressResponse +=
+                  utf8.decode(event.sublist(0, event.length - 2));
               //   debugPrint(inProgressResponse);
             }
             refresh();

@@ -129,6 +129,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ).then((value) {
                       fileUploading = false;
                       refresh();
+                      if (value != 200) {
+                        removeSession(newCreated['session_id']!);
+                        debugPrint('Error uploading file');
+                        return;
+                      }
                       gotoChatScreen(newCreated['session_id']!, sessions);
                     });
                   }
