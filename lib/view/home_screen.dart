@@ -150,6 +150,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 },
               ),
+              getCard(
+                "Set the URL",
+                width * 0.4,
+                height * 0.2,
+                () async {
+                  String? url = await askURL();
+                  set_base_url(url);
+                },
+              ),
             ],
           ),
           const SizedBox(
@@ -275,6 +284,41 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             TextButton(
               child: const Text('Submit'),
+              onPressed: () {
+                Navigator.of(context).pop(name);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<String?> askURL() {
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        String name = '';
+        return AlertDialog(
+          title: const Text('Enter URL'),
+          content: TextField(
+            onChanged: (value) {
+              name = value;
+            },
+            onSubmitted: (value) => Navigator.of(context).pop(value),
+            decoration: const InputDecoration(
+              hintText: 'Enter URL',
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              child: const Text('Set'),
               onPressed: () {
                 Navigator.of(context).pop(name);
               },

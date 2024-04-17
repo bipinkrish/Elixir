@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
-const String baseUrl =
-    "http://0.0.0.0:8000"; // "http://192.168.1.13:8000";
+String baseUrl =  "http://0.0.0.0:8000"; // "http://192.168.1.13:8000";
 
 Future<Map<String, String>> newSession(String sessionName) async {
   final response = await http.get(
@@ -86,4 +85,9 @@ String getImageUrl(String fileId) {
 Uri getChatUrl(String sessionID, String message) {
   return Uri.parse(
       '$baseUrl/chat_with_file?session_id_or_name=$sessionID&message=$message');
+}
+
+
+void set_base_url(String url){
+  baseUrl =  url;
 }
