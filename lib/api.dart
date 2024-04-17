@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
 const String baseUrl =
-    "https://b057-2401-4900-1cbc-3352-e05f-7191-b5d1-8a8d.ngrok-free.app"; // "http://192.168.1.13:8000";
+    "http://0.0.0.0:8000"; // "http://192.168.1.13:8000";
 
 Future<Map<String, String>> newSession(String sessionName) async {
   final response = await http.get(
