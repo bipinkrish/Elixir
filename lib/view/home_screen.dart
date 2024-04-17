@@ -156,7 +156,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 height * 0.2,
                 () async {
                   String? url = await askURL();
-                  set_base_url(url);
+                  if (url != null && url.isNotEmpty) {
+                    set_base_url(url)
+                  }
+                  
                 },
               ),
             ],
