@@ -150,18 +150,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 },
               ),
-              getCard(
-                "Set the URL",
-                width * 0.4,
-                height * 0.2,
-                () async {
-                  String? url = await askURL();
-                  if (url != null && url.isNotEmpty) {
-                    set_base_url(url);
-                  }
-                  
-                },
-              ),
             ],
           ),
           const SizedBox(
