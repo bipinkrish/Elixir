@@ -114,7 +114,6 @@ RawScrollbar getImagesWidget(List images) {
                 padding: const EdgeInsets.all(8),
                 child: Image.network(
                   getImageUrl(image),
-                  height: 300,
                   fit: BoxFit.fitHeight,
                 ),
               ),
