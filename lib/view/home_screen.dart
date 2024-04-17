@@ -112,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 final file = await FilePicker.platform.pickFiles(
                   allowMultiple: false,
                   type: FileType.custom,
-                  allowedExtensions: ['pdf'],
+                  allowedExtensions: ['pdf','txt'],
                   withData: true,
                 );
                 if (file != null) {
@@ -148,15 +148,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (sessionName != null && sessionName.isNotEmpty) {
                     createNewsessionAndGo(sessionName);
                   }
-                },
-              ),
-              getCard(
-                "Set the URL",
-                width * 0.4,
-                height * 0.2,
-                () async {
-                  String? url = await askURL();
-                  set_base_url(url);
                 },
               ),
             ],

@@ -241,7 +241,9 @@ class _ChatScreenState extends State<ChatScreen> {
               //   debugPrint(inProgressData.toString());
             } else {
               inProgressResponse +=
-                  utf8.decode(event.sublist(0, event.length - 2));
+                  utf8.decode(event).replaceAll("\r\n", "");
+                  // debugPrint(event);
+
               //   debugPrint(inProgressResponse);
             }
             refresh();
