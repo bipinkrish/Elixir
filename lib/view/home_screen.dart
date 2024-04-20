@@ -42,9 +42,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   InkWell getCard(
-      String name, double width, double height, void Function() pressed) {
+      String name, double width, double height, IconData icon,void Function() pressed) {
     return InkWell(
       onTap: pressed,
+      splashColor: kBg500Color,
+      focusColor: kBg500Color,
+      hoverColor: kBg500Color,
+      highlightColor: kBg500Color,
       child: Container(
         width: width,
         height: height,
@@ -63,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Padding(
               padding: const EdgeInsets.all(20),
               child: Icon(
-                Icons.chat_bubble,
+                icon,
                 size: height * 0.25,
                 color: kWhiteColor,
               ),
@@ -88,6 +92,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
 
+    final cardWidth = width * 0.3;
+
     return Scaffold(
       backgroundColor: kBg500Color,
       body: Column(
@@ -108,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              getCard("Chat with PDF", width * 0.4, height * 0.2, () async {
+              getCard("Chat with PDF", cardWidth, height * 0.2, Icons.file_open ,()  async {
                 final file = await FilePicker.platform.pickFiles(
                   allowMultiple: false,
                   type: FileType.custom,
@@ -141,13 +147,24 @@ class _HomeScreenState extends State<HomeScreen> {
               }),
               getCard(
                 "Chat without PDF",
-                width * 0.4,
+                cardWidth,
                 height * 0.2,
+                Icons.chat,
                 () async {
                   String? sessionName = await showAskSessionName();
                   if (sessionName != null && sessionName.isNotEmpty) {
                     createNewsessionAndGo(sessionName);
                   }
+                },
+              ),
+              getCard(
+                "Set the URL",
+                cardWidth,
+                height * 0.2,
+                Icons.link,
+                () async {
+                  String? url = await askURL();
+                  set_base_url(url!);
                 },
               ),
             ],
@@ -194,7 +211,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                           child: ListTile(
-                            hoverColor: kBg100Color,
+                            splashColor: kBg500Color,
+                            focusColor: kBg500Color,
+                            hoverColor: kBg500Color,
                             title: Text(sessions[index]['session_name']!),
                             titleTextStyle: kWhiteText.copyWith(
                               fontSize: 20,
@@ -249,7 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
+  
   Future<String?> showAskSessionName() {
     return showDialog<String>(
       context: context,
