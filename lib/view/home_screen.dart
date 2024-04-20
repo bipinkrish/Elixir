@@ -41,8 +41,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  InkWell getCard(
-      String name, double width, double height, IconData icon,void Function() pressed) {
+  InkWell getCard(String name, double width, double height, IconData icon,
+      void Function() pressed) {
     return InkWell(
       onTap: pressed,
       splashColor: kBg500Color,
@@ -91,7 +91,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
-
     final cardWidth = width * 0.3;
 
     return Scaffold(
@@ -114,11 +113,12 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              getCard("Chat with PDF", cardWidth, height * 0.2, Icons.file_open ,()  async {
+              getCard("Chat with PDF", cardWidth, height * 0.2, Icons.file_open,
+                  () async {
                 final file = await FilePicker.platform.pickFiles(
                   allowMultiple: false,
                   type: FileType.custom,
-                  allowedExtensions: ['pdf','txt'],
+                  allowedExtensions: ['pdf', 'txt'],
                   withData: true,
                 );
                 if (file != null) {
@@ -164,7 +164,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 Icons.link,
                 () async {
                   String? url = await askURL();
-                  set_base_url(url!);
+                  if (url != null && url.isNotEmpty) {
+                    setBaseUrl(url);
+                    getSessions();
+                  }
                 },
               ),
             ],
@@ -268,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-  
+
   Future<String?> showAskSessionName() {
     return showDialog<String>(
       context: context,
@@ -312,6 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return AlertDialog(
           title: const Text('Enter URL'),
           content: TextField(
+            controller: TextEditingController(text: baseUrl),
             onChanged: (value) {
               name = value;
             },

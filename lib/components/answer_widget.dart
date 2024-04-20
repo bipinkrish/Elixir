@@ -113,8 +113,11 @@ RawScrollbar getImagesWidget(List images) {
               child: Padding(
                 padding: const EdgeInsets.all(8),
                 child: Image.network(
-                  getImageUrl(image)
-
+                  getImageUrl(image),
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.error,
+                    color: Colors.red,
+                  ),
                 ),
               ),
             ),
