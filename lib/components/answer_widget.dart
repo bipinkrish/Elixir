@@ -114,6 +114,8 @@ RawScrollbar getImagesWidget(List images) {
                 padding: const EdgeInsets.all(8),
                 child: Image.network(
                   getImageUrl(image),
+                  height: 300,
+                  fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => const Icon(
                     Icons.error,
                     color: Colors.red,
@@ -151,13 +153,22 @@ Column getSourcesWidget(Map sources) {
               ),
               const SizedBox(width: 4),
               Flexible(
-                child: Text(
-                  source.key + ": " + source.value.join(", "),
+                  child: RichText(
+                overflow: TextOverflow.ellipsis,
+                text: TextSpan(
                   style:
                       kWhiteText.copyWith(fontSize: 14, fontWeight: kRegular),
-                  overflow: TextOverflow.ellipsis,
+                  children: [
+                    TextSpan(
+                      text: source.key + ": ",
+                    ),
+                    TextSpan(
+                      text: source.value.join(", "),
+                      style: const TextStyle(color: Colors.yellow),
+                    ),
+                  ],
                 ),
-              ),
+              )),
             ],
           ),
         ),

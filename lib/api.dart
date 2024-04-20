@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
-String baseUrl = "http://0.0.0.0:8000";
+String baseUrl = "http://192.168.1.13:8000";
 
 Future<Map<String, String>> newSession(String sessionName) async {
   final response = await http.get(
@@ -100,6 +100,38 @@ Future<List<Map<String, String>>> getChatHistory(String sessionId) async {
   }
 }
 
+Future<List<List<String>>> getListFiles(String sessionId) async {
+  try {
+    final response = await http
+        .get(Uri.parse('$baseUrl/list_files?session_id_or_name=$sessionId'));
+    final List<dynamic> dataJson = jsonDecode(response.body);
+    final List<List<String>> fileList = [];
+
+    for (var file in dataJson) {
+      final List<String> fileMap = [];
+      fileMap.add(file[0]);
+      fileMap.add(file[1]);
+      fileList.add(fileMap);
+    }
+
+    return fileList;
+  } catch (e) {
+    print(e);
+    return [[]];
+  }
+}
+
+Future<Map> getFileStats(String fileId) async {
+  try {
+    final response =
+        await http.get(Uri.parse('$baseUrl/pdf_stats?file_id=$fileId'));
+    return jsonDecode(response.body);
+  } catch (e) {
+    print(e);
+    return {};
+  }
+}
+
 String getImageUrl(String fileId) {
   return '$baseUrl/get_image?file_id=$fileId';
 }
@@ -107,6 +139,10 @@ String getImageUrl(String fileId) {
 Uri getChatUrl(String sessionID, String message) {
   return Uri.parse(
       '$baseUrl/chat_with_file?session_id_or_name=$sessionID&message=$message');
+}
+
+String getPdfThumbUrl(String fileId) {
+  return '$baseUrl/pdf_thumb?file_id=$fileId';
 }
 
 void setBaseUrl(String url) {

@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:elixir/theme.dart';
 import 'package:elixir/api.dart';
@@ -26,6 +28,7 @@ class _ChatScreenState extends State<ChatScreen> {
   late ScrollController scrollController;
   late TextEditingController inputQuestionController;
   List<Map<String, String>> history = [];
+  List<List<String>> fileList = [];
 
   getHistory() {
     getChatHistory(widget.sessionId).then((value) {
@@ -43,11 +46,19 @@ class _ChatScreenState extends State<ChatScreen> {
     history.add({'role': 'assistant', 'message': jsonEncode(others)});
   }
 
+  fetchFileLists() {
+    getListFiles(widget.sessionId).then((value) {
+      fileList = value;
+      refresh();
+    });
+  }
+
   @override
   void initState() {
     inputQuestionController = TextEditingController();
     scrollController = ScrollController();
     getHistory();
+    fetchFileLists();
     super.initState();
   }
 
@@ -121,7 +132,20 @@ class _ChatScreenState extends State<ChatScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            buildChatList(),
+            Expanded(
+              child: Row(
+                children: [
+                  Flexible(
+                    flex: 3,
+                    child: buildFileStats(),
+                  ),
+                  Flexible(
+                    flex: 8,
+                    child: buildChatList(),
+                  ),
+                ],
+              ),
+            ),
             if (inProgress)
               LoadingWidget(
                 inProgressResponse: inProgressResponse,
@@ -144,64 +168,179 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Expanded buildChatList() {
-    return history.isNotEmpty
-        ? Expanded(
-            child: RawScrollbar(
-              thumbVisibility: true,
-              trackVisibility: true,
-              thumbColor: kWhiteColor,
-              trackColor: kBg100Color,
-              radius: const Radius.circular(4),
-              trackRadius: const Radius.circular(4),
-              controller: scrollController,
-              child: ListView.separated(
-                controller: scrollController,
-                separatorBuilder: (context, index) => const SizedBox(
-                  height: 12,
-                ),
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(
-                    bottom: 20, left: 16, right: 16, top: 16),
-                itemCount: history.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final thishistory = history[index];
-                  final isUser = thishistory['role'] == 'user';
-                  String msg = "";
-                  Map sources = {};
-                  List images = [];
-
-                  if (isUser) {
-                    msg = thishistory['message']!;
-                  } else {
-                    final jsondata = jsonDecode(thishistory['message']!);
-                    msg = jsondata['results'];
-                    sources = jsondata['source'];
-                    images = jsondata['images'] ?? jsondata['imgs'];
-                  }
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      isUser
-                          ? UserQuestionWidget(question: msg)
-                          : AnswerWidget(
-                              answer: msg,
-                              sources: sources,
-                              images: images,
+  Widget buildFileStats() {
+    return fileList.isNotEmpty
+        ? SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (List<String> file in fileList)
+                  Padding(
+                    padding:
+                        const EdgeInsets.only(top: 10, bottom: 10, left: 10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(164, 31, 30, 36),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.white24,
+                          width: 0.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            spreadRadius: 1,
+                            blurRadius: 2,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Flexible(
+                        child: Column(
+                          children: [
+                            Text(
+                              file[1],
+                              style: kWhiteText.copyWith(
+                                  fontSize: 16, fontWeight: kSemiBold),
                             ),
-                    ],
-                  );
-                },
-              ),
+                            const SizedBox(height: 4),
+                            Image.network(
+                              getPdfThumbUrl(file[0]),
+                              fit: BoxFit.scaleDown,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                Icons.error,
+                                color: Colors.red,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            FutureBuilder<Map>(
+                              future: getFileStats(file[0]),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const CircularProgressIndicator(
+                                    color: Colors.white,
+                                  );
+                                } else if (snapshot.hasError) {
+                                  debugPrint(snapshot.error.toString());
+                                  return const SizedBox();
+                                } else {
+                                  RichText getStatField(
+                                      String key, dynamic value) {
+                                    return RichText(
+                                      overflow: TextOverflow.ellipsis,
+                                      text: TextSpan(
+                                        style: kWhiteText.copyWith(
+                                          fontSize: 14,
+                                          fontWeight: kRegular,
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: "$key: ",
+                                            style: const TextStyle(
+                                              color: Colors.blue,
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: value.toString(),
+                                            style: const TextStyle(
+                                              color: Colors.green,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+
+                                  final stats = snapshot.data!;
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      for (var key in stats.keys)
+                                        getStatField(key, stats[key]!),
+                                    ],
+                                  );
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           )
-        : Expanded(
-            child: Center(
-              child: Text(
-                "No chat history, start asking questions!",
-                style: kWhiteText,
+        : Center(
+            child: Text(
+              "No files found!",
+              style: kWhiteText,
+              textAlign: TextAlign.center,
+            ),
+          );
+  }
+
+  Widget buildChatList() {
+    return history.isNotEmpty
+        ? RawScrollbar(
+            thumbVisibility: true,
+            trackVisibility: true,
+            thumbColor: kWhiteColor,
+            trackColor: kBg100Color,
+            radius: const Radius.circular(4),
+            trackRadius: const Radius.circular(4),
+            controller: scrollController,
+            child: ListView.separated(
+              controller: scrollController,
+              separatorBuilder: (context, index) => const SizedBox(
+                height: 12,
               ),
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.only(
+                  bottom: 20, left: 16, right: 16, top: 16),
+              itemCount: history.length,
+              itemBuilder: (BuildContext context, int index) {
+                final thishistory = history[index];
+                final isUser = thishistory['role'] == 'user';
+                String msg = "";
+                Map sources = {};
+                List images = [];
+
+                if (isUser) {
+                  msg = thishistory['message']!;
+                } else {
+                  final jsondata = jsonDecode(thishistory['message']!);
+                  msg = jsondata['results'];
+                  sources = jsondata['source'];
+                  images = jsondata['images'] ?? jsondata['imgs'];
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    isUser
+                        ? UserQuestionWidget(question: msg)
+                        : AnswerWidget(
+                            answer: msg,
+                            sources: sources,
+                            images: images,
+                          ),
+                  ],
+                );
+              },
+            ),
+          )
+        : Center(
+            child: Text(
+              "No chat history, start asking questions!",
+              style: kWhiteText,
+              textAlign: TextAlign.center,
             ),
           );
   }
@@ -240,9 +379,8 @@ class _ChatScreenState extends State<ChatScreen> {
               inProgressData = jsonDecode(utf8.decode(event));
               //   debugPrint(inProgressData.toString());
             } else {
-              inProgressResponse +=
-                  utf8.decode(event).replaceAll("\r\n", "");
-                  // debugPrint(event);
+              inProgressResponse += utf8.decode(event).replaceAll("\r\n", "");
+              // debugPrint(event);
 
               //   debugPrint(inProgressResponse);
             }
