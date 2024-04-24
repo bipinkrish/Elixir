@@ -165,58 +165,58 @@ jobs:
           name: Elixir.AppImage
           path: ./AppImage/Elixir.AppImage
 
-  # build_deb:
-  #   needs: build
-  #   runs-on: ubuntu-22.04
+  build_deb:
+    needs: build
+    runs-on: ubuntu-22.04
 
-  #   steps:
-  #     - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - name: Download generated files
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: lib-files
-  #         path: lib
+      - name: Download generated files
+        uses: actions/download-artifact@v3
+        with:
+          name: lib-files
+          path: lib
 
-  #     - name: Install dependencies
-  #       run: |
-  #         sudo apt-get update
-  #         sudo apt-get install -y clang cmake libgtk-3-dev ninja-build libayatana-appindicator3-dev
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake libgtk-3-dev ninja-build libayatana-appindicator3-dev
 
-  #     - uses: subosito/flutter-action@v2
-  #       with:
-  #         flutter-version: ${{ env.FLUTTER_VERSION }}
-  #         channel: "stable"
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: "stable"
 
-  #     - name: Enable dart_distributor
-  #       run: dart pub global activate flutter_distributor
+      - name: Enable dart_distributor
+        run: dart pub global activate flutter_distributor
 
-  #     - name: Update PATH
-  #       run: echo 'export PATH="$PATH:$HOME/.pub-cache/bin"' >> ~/.bashrc
+      - name: Update PATH
+        run: echo 'export PATH="$PATH:$HOME/.pub-cache/bin"' >> ~/.bashrc
 
-  #     - name: Build deb package
-  #       run: flutter_distributor package --platform linux --targets deb
+      - name: Build deb package
+        run: flutter_distributor package --platform linux --targets deb
 
-  #     - name: Find deb file
-  #       id: find_deb
-  #       run: |
-  #         VERSION=${{ needs.build.outputs.version }}
-  #         DEB_PATH=$(find dist -name "elixir-$VERSION*-linux.deb")
-  #         echo "deb_path=$DEB_PATH" >> $GITHUB_OUTPUT
+      - name: Find deb file
+        id: find_deb
+        run: |
+          VERSION=${{ needs.build.outputs.version }}
+          DEB_PATH=$(find dist -name "elixir-$VERSION*-linux.deb")
+          echo "deb_path=$DEB_PATH" >> $GITHUB_OUTPUT
 
-  #     - name: Check if deb file exists
-  #       id: check_file
-  #       run: |
-  #         if [[ ! -f "${{ steps.find_deb.outputs.deb_path }}" ]]; then
-  #           echo "File not found: ${{ steps.find_deb.outputs.deb_path }}"
-  #           exit 1
-  #         fi
+      - name: Check if deb file exists
+        id: check_file
+        run: |
+          if [[ ! -f "${{ steps.find_deb.outputs.deb_path }}" ]]; then
+            echo "File not found: ${{ steps.find_deb.outputs.deb_path }}"
+            exit 1
+          fi
 
-  #     - name: Upload deb file
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: deb-result
-  #         path: ${{ steps.find_deb.outputs.deb_path }}
+      - name: Upload deb file
+        uses: actions/upload-artifact@v3
+        with:
+          name: deb-result
+          path: ${{ steps.find_deb.outputs.deb_path }}
 
   build_windows_zip:
     needs: build

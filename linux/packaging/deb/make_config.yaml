@@ -1,0 +1,29 @@
+display_name: Elixir
+package_name: elixir
+maintainer:
+  name: Bipin
+priority: optional
+section: x11
+installed_size: 10000
+essential: false
+icon: assets/elixir.png
+
+pre_dependencies:
+  - libc6 (>= 2.31)
+
+postinstall_scripts:
+  - echo "Installed elixir successfully"
+postuninstall_scripts:
+  - echo "Sorry to see you go :("
+
+keywords:
+  - Sharing
+  - LAN
+  - Files
+
+generic_name: write desc for the app.
+
+categories:
+  - genai
+
+startup_notify: true
