@@ -255,7 +255,7 @@ jobs:
           path: Elixir.zip
 
   release:
-    needs: [build, build_apk, build_tar, build_windows_zip, build_appimage] # build_deb
+    needs: [build, build_apk, build_tar, build_windows_zip, build_appimage, build_deb]
     runs-on: ubuntu-22.04
 
     steps:
