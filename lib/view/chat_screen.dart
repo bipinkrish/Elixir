@@ -1,7 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:elixir/theme.dart';
 import 'package:elixir/api.dart';
@@ -228,32 +226,25 @@ class _ChatScreenState extends State<ChatScreen> {
                                   debugPrint(snapshot.error.toString());
                                   return const SizedBox();
                                 } else {
-                                  RichText getStatField(
-                                      String key, dynamic value) {
-                                    return RichText(
-                                      overflow: TextOverflow.ellipsis,
-                                      text: TextSpan(
-                                        style: kWhiteText.copyWith(
-                                          fontSize: 14,
-                                          fontWeight: kRegular,
+                                  Row getStatField(String key, dynamic value) {
+                                    return Row(
+                                      children: [
+                                        Text(
+                                          "$key: ",
+                                          style: const TextStyle(
+                                            color: Colors.blue,
+                                            fontStyle: FontStyle.italic,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                        children: [
-                                          TextSpan(
-                                            text: "$key: ",
-                                            style: const TextStyle(
-                                              color: Colors.blue,
-                                              fontStyle: FontStyle.italic,
-                                            ),
+                                        Text(
+                                          value.toString(),
+                                          style: const TextStyle(
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          TextSpan(
-                                            text: value.toString(),
-                                            style: const TextStyle(
-                                              color: Colors.green,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     );
                                   }
 
