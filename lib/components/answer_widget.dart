@@ -1,4 +1,5 @@
 import 'package:elixir/api.dart';
+import 'package:elixir/extensions.dart';
 import 'package:elixir/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:markdown_viewer/markdown_viewer.dart';
@@ -58,6 +59,14 @@ class AnswerWidget extends StatelessWidget {
                   enableFootnote: true,
                   enableImageSize: true,
                   enableKbd: true,
+                  selectable: true,
+                  selectionColor: Colors.lightBlue,
+                  syntaxExtensions: syntaxes,
+                  elementBuilders: builders,
+                  highlightBuilder: (text, language, infoString) {
+                    // Code Highlighting
+                    return prism.render(text, language ?? 'plain');
+                  },
                   styleSheet: MarkdownStyle(
                     textStyle:
                         kWhiteText.copyWith(fontSize: 16, fontWeight: kRegular),
@@ -73,6 +82,10 @@ class AnswerWidget extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
+                  onTapLink: (href, title) {
+                    // ignore: avoid_print
+                    print({href, title});
+                  },
                 ),
                 const SizedBox(
                   height: 8,

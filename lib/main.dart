@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:elixir/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:elixir/view/splash_screen.dart';
 import 'package:window_size/window_size.dart';
@@ -18,6 +19,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    initSyntaxesAndBuilders();
     return const MaterialApp(
       title: "Elixir",
       debugShowCheckedModeBanner: false,
