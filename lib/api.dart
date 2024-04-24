@@ -146,5 +146,8 @@ String getPdfThumbUrl(String fileId) {
 }
 
 void setBaseUrl(String url) {
+  if (url.endsWith('/')) {
+      url = url.substring(0,url.length -1 );
+  }
   baseUrl = url;
 }
