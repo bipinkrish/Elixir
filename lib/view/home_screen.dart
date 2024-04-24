@@ -16,10 +16,12 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, String>> sessions = [];
   final ScrollController _scrollController = ScrollController();
   bool fileUploading = false;
+  bool active = false;
 
   getSessions() {
     listSessions().then((value) {
-      sessions = value;
+      sessions = value["sessions"];
+      active = value["active"];
       refresh();
     });
   }
@@ -97,8 +99,9 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: kBg500Color,
       body: Column(
         children: [
+          getStatus(),
           SizedBox(
-            height: height * 0.05,
+            height: height * 0.03,
           ),
           Center(
             child: Text(
@@ -108,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           SizedBox(
-            height: height * 0.05,
+            height: height * 0.03,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -186,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           if (sessions.isNotEmpty)
             SizedBox(
-              height: height * 0.35,
+              height: height * 0.4,
               width: width * 0.4,
               child: RawScrollbar(
                 thumbVisibility: true,
@@ -247,6 +250,25 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  ColoredBox getStatus() {
+    return ColoredBox(
+      color: active ? Colors.green : Colors.red,
+      child: SizedBox(
+        height: 20,
+        width: 100,
+        child: Center(
+          child: Text(
+            active ? 'Active' : 'Inactive',
+            style: kWhiteText.copyWith(
+              fontSize: 12,
+              fontWeight: kRegular,
+            ),
+          ),
+        ),
       ),
     );
   }

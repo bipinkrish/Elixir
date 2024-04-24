@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
-String baseUrl = "http://192.168.1.13:8000";
+String baseUrl = "https://0ce0-36-255-87-135.ngrok-free.app";
 
 Future<Map<String, String>> newSession(String sessionName) async {
   final response = await http.get(
@@ -19,7 +19,7 @@ Future<Map<String, String>> newSession(String sessionName) async {
   return data;
 }
 
-Future<List<Map<String, String>>> listSessions() async {
+Future<Map<String, dynamic>> listSessions() async {
   try {
     final response = await http.get(Uri.parse('$baseUrl/list_sessions'));
     final List<dynamic> sessionsJson = jsonDecode(response.body);
@@ -33,10 +33,16 @@ Future<List<Map<String, String>>> listSessions() async {
       sessions.add(sessionMap);
     }
 
-    return sessions;
+    return {
+      'sessions': sessions,
+      'active': response.statusCode == 200,
+    };
   } catch (e) {
     print(e);
-    return [];
+    return {
+      'sessions': [],
+      'active': false,
+    };
   }
 }
 
@@ -147,7 +153,7 @@ String getPdfThumbUrl(String fileId) {
 
 void setBaseUrl(String url) {
   if (url.endsWith('/')) {
-      url = url.substring(0,url.length -1 );
+    url = url.substring(0, url.length - 1);
   }
   baseUrl = url;
 }
