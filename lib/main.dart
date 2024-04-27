@@ -3,11 +3,12 @@ import 'package:elixir/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:elixir/view/splash_screen.dart';
 import 'package:window_size/window_size.dart';
+import 'package:fast_cached_network_image/fast_cached_network_image.dart';
 
-void main() {
+void main() async {
   // ignore: unused_local_variable
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  // FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  await FastCachedImageConfig.init(clearCacheAfter: const Duration(days: 15));
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     setWindowTitle("Elixir");
   }

@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
-String baseUrl = "https://0ce0-36-255-87-135.ngrok-free.app";
+String baseUrl = "http://192.168.1.13:8000";
 
 Future<Map<String, String>> newSession(String sessionName) async {
   final response = await http.get(
@@ -40,20 +40,31 @@ Future<Map<String, dynamic>> listSessions() async {
   } catch (e) {
     print(e);
     return {
-      'sessions': [],
+      'sessions': <Map<String, String>>[],
       'active': false,
     };
   }
 }
 
-Future<Map<String, dynamic>> deleteSessionById(String sessionId) async {
+Future<bool> deleteSessionById(String sessionId) async {
   try {
     final response = await http
         .get(Uri.parse('$baseUrl/delete_session_by_id?session_id=$sessionId'));
-    return jsonDecode(response.body);
+    return response.statusCode == 200;
   } catch (e) {
     print(e);
-    return {};
+    return false;
+  }
+}
+
+Future<bool> clearHistoryById(String sessionId) async {
+  try {
+    final response = await http.get(
+        Uri.parse('$baseUrl/clear_chat_history?session_id_or_name=$sessionId'));
+    return response.statusCode == 200;
+  } catch (e) {
+    print(e);
+    return false;
   }
 }
 

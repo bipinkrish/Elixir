@@ -1,4 +1,4 @@
-import 'package:elixir/api.dart';
+import 'package:elixir/components/utils.dart';
 import 'package:elixir/extensions.dart';
 import 'package:elixir/theme.dart';
 import 'package:flutter/material.dart';
@@ -98,93 +98,4 @@ class AnswerWidget extends StatelessWidget {
       ],
     );
   }
-}
-
-RawScrollbar getImagesWidget(List images) {
-  final ScrollController scrollController = ScrollController();
-
-  return RawScrollbar(
-    controller: scrollController,
-    thumbVisibility: true,
-    trackVisibility: true,
-    thumbColor: kWhiteColor,
-    trackColor: kBg100Color,
-    radius: const Radius.circular(4),
-    trackRadius: const Radius.circular(4),
-    child: SingleChildScrollView(
-      controller: scrollController,
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          for (var image in images)
-            Container(
-              margin: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.white,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Image.network(
-                  getImageUrl(image),
-                  height: 300,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.error,
-                    color: Colors.red,
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    ),
-  );
-}
-
-Column getSourcesWidget(Map sources) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        "Sources",
-        style: kWhiteText.copyWith(
-            fontSize: 16, fontWeight: kSemiBold, color: Colors.green),
-      ),
-      const SizedBox(
-        height: 8,
-      ),
-      for (var source in sources.entries)
-        Padding(
-          padding: const EdgeInsets.only(bottom: 4),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.link,
-                color: Colors.white,
-                size: 16,
-              ),
-              const SizedBox(width: 4),
-              Flexible(
-                  child: RichText(
-                overflow: TextOverflow.ellipsis,
-                text: TextSpan(
-                  style:
-                      kWhiteText.copyWith(fontSize: 14, fontWeight: kRegular),
-                  children: [
-                    TextSpan(
-                      text: source.key + ": ",
-                    ),
-                    TextSpan(
-                      text: source.value.join(", "),
-                      style: const TextStyle(color: Colors.yellow),
-                    ),
-                  ],
-                ),
-              )),
-            ],
-          ),
-        ),
-    ],
-  );
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:elixir/components/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:elixir/theme.dart';
@@ -84,22 +85,35 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
             for (Map<String, String> session in widget.sessions)
-              ListTile(
-                title: Text(session["session_name"]!),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChatScreen(
-                        sessionId: session['session_id']!,
-                        sessions: widget.sessions,
-                      ),
+              if (session['session_id'] != widget.sessionId)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: kBg100Color.withOpacity(0.5),
                     ),
-                  );
-                },
-              ),
+                    padding: const EdgeInsets.all(2),
+                    child: ListTile(
+                      title: Text(session["session_name"]!, style: kWhiteText),
+                      tileColor: kBg100Color.withOpacity(0.5),
+                      hoverColor: kBg500Color,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatScreen(
+                              sessionId: session['session_id']!,
+                              sessions: widget.sessions,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
           ],
         ),
       ),
@@ -120,11 +134,29 @@ class _ChatScreenState extends State<ChatScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.home_rounded)),
-          )
+              onPressed: () {
+                showConfirmationDialog(context, "Clear",
+                    "Are you sure want to clear chat history?", () {
+                  clearHistoryById(widget.sessionId).then((value) {
+                    if (!value) return;
+                    Navigator.of(context).pop();
+                    history = [];
+                    refresh();
+                  });
+                });
+              },
+              icon: const Icon(Icons.delete_rounded),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: const Icon(Icons.home_rounded),
+            ),
+          ),
         ],
       ),
       body: SafeArea(
@@ -136,6 +168,15 @@ class _ChatScreenState extends State<ChatScreen> {
                   Flexible(
                     flex: 3,
                     child: buildFileStats(),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 10, bottom: 4, left: 8),
+                    child: VerticalDivider(
+                      thickness: 1,
+                      indent: 4,
+                      endIndent: 4,
+                      color: Colors.grey,
+                    ),
                   ),
                   Flexible(
                     flex: 8,
@@ -204,14 +245,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                   fontSize: 16, fontWeight: kSemiBold),
                             ),
                             const SizedBox(height: 4),
-                            Image.network(
-                              getPdfThumbUrl(file[0]),
+                            ImageWidget(
+                              url: getPdfThumbUrl(file[0]),
                               fit: BoxFit.scaleDown,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(
-                                Icons.error,
-                                color: Colors.red,
-                              ),
                             ),
                             const SizedBox(height: 8),
                             FutureBuilder<Map>(

@@ -1,7 +1,6 @@
+import 'package:elixir/components/utils.dart';
 import 'package:elixir/theme.dart';
 import 'package:flutter/material.dart';
-import 'package:elixir/components/answer_widget.dart';
-import 'package:loading_indicator/loading_indicator.dart';
 
 class LoadingWidget extends StatelessWidget {
   final String inProgressResponse;
@@ -25,7 +24,10 @@ class LoadingWidget extends StatelessWidget {
         children: [
           ClipOval(
             child: SizedBox(
-                height: 32, width: 32, child: Image.asset("assets/logo.png")),
+              height: 32,
+              width: 32,
+              child: Image.asset("assets/logo.png"),
+            ),
           ),
           const SizedBox(width: 12),
           Flexible(
@@ -74,11 +76,4 @@ class LoadingWidget extends StatelessWidget {
       ),
     );
   }
-}
-
-LoadingIndicator getPackman() {
-  return const LoadingIndicator(
-    indicatorType: Indicator.pacman,
-    colors: [kWhiteColor, Colors.green, Colors.red],
-  );
 }

@@ -1,4 +1,4 @@
-import 'package:elixir/components/loading_widget.dart';
+import 'package:elixir/components/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:elixir/theme.dart';
 import 'package:elixir/api.dart';
@@ -20,8 +20,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   getSessions() {
     listSessions().then((value) {
-      sessions = value["sessions"];
-      active = value["active"];
+      sessions = value["sessions"] ?? [];
+      active = value["active"] ?? false;
       refresh();
     });
   }
@@ -206,6 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     controller: _scrollController,
                     itemCount: sessions.length,
                     itemBuilder: (context, index) {
+                      final sessionID = sessions[index]['session_id']!;
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         child: Container(
@@ -227,9 +228,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             trailing: IconButton(
                               onPressed: () {
-                                showDeleteConfirmationDialog(
-                                  sessions[index]['session_id']!,
-                                );
+                                showConfirmationDialog(context, "Delete",
+                                    "Are you sure you want to delete this session?",
+                                    () {
+                                  deleteSessionById(sessionID).then((value) {
+                                    if (!value) return;
+                                    Navigator.of(context).pop();
+                                    removeSession(sessionID);
+                                  });
+                                });
                               },
                               icon: const Icon(Icons.delete_rounded),
                               hoverColor: Colors.red,
@@ -358,35 +365,6 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 Navigator.of(context).pop(name);
               },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void showDeleteConfirmationDialog(String sessionId) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Delete Confirmation'),
-          content: const Text('Are you sure you want to delete this session?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                deleteSessionById(sessionId).then((value) {
-                  removeSession(sessionId);
-                  Navigator.of(context).pop();
-                });
-              },
-              child: const Text('Delete'),
             ),
           ],
         );

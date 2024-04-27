@@ -19,6 +19,7 @@ dependencies:
   loading_indicator: ^3.1.1
   file_picker: ^8.0.0+1
   flutter_prism: ^0.2.2
+  fast_cached_network_image: ^1.2.9
 
   window_size:
     git:
