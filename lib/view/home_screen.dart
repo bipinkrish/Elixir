@@ -43,48 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  InkWell getCard(String name, double width, double height, IconData icon,
-      void Function() pressed) {
-    return InkWell(
-      onTap: pressed,
-      splashColor: kBg500Color,
-      focusColor: kBg500Color,
-      hoverColor: kBg500Color,
-      highlightColor: kBg500Color,
-      child: Container(
-        width: width,
-        height: height,
-        padding: EdgeInsets.all(height * 0.01),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.grey,
-            width: 1.0,
-          ),
-          color: kBg300Color,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Icon(
-                icon,
-                size: height * 0.25,
-                color: kWhiteColor,
-              ),
-            ),
-            Text(
-              name,
-              style: kWhiteText.copyWith(fontSize: 20, fontWeight: kMedium),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (fileUploading) {
@@ -100,9 +58,6 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           getStatus(),
-          SizedBox(
-            height: height * 0.03,
-          ),
           Center(
             child: Text(
               'Elixir',
@@ -175,8 +130,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          const SizedBox(
-            height: 50,
+          SizedBox(
+            height: height * 0.05,
           ),
           if (sessions.isNotEmpty)
             Text(
@@ -261,15 +216,57 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  ColoredBox getStatus() {
-    return ColoredBox(
-      color: active ? Colors.green : Colors.red,
-      child: SizedBox(
-        height: 20,
-        width: 100,
-        child: Center(
+  InkWell getCard(String name, double width, double height, IconData icon,
+      void Function() pressed) {
+    return InkWell(
+      onTap: pressed,
+      splashColor: kBg500Color,
+      focusColor: kBg500Color,
+      hoverColor: kBg500Color,
+      highlightColor: kBg500Color,
+      child: Container(
+        width: width,
+        height: height,
+        padding: EdgeInsets.all(height * 0.01),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.grey,
+            width: 1.0,
+          ),
+          color: kBg300Color,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Icon(
+                icon,
+                size: height * 0.25,
+                color: kWhiteColor,
+              ),
+            ),
+            Text(
+              name,
+              style: kWhiteText.copyWith(fontSize: 20, fontWeight: kMedium),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Align getStatus() {
+    return Align(
+      alignment: Alignment.topRight,
+      child: ColoredBox(
+        color: active ? Colors.green : Colors.red,
+        child: Padding(
+          padding: const EdgeInsets.all(4),
           child: Text(
-            active ? 'Active' : 'Inactive',
+            active ? 'Connected ✔' : 'Not Connected ❌',
             style: kWhiteText.copyWith(
               fontSize: 12,
               fontWeight: kRegular,

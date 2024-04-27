@@ -91,16 +91,14 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      color: kBg100Color.withOpacity(0.5),
+                      color: kBg100Color,
                     ),
-                    padding: const EdgeInsets.all(2),
-                    child: ListTile(
-                      title: Text(session["session_name"]!, style: kWhiteText),
-                      tileColor: kBg100Color.withOpacity(0.5),
-                      hoverColor: kBg500Color,
+                    padding: const EdgeInsets.all(8),
+                    child: GestureDetector(
+                      child: Text(session["session_name"]!, style: kWhiteText),
                       onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
+                        Navigator.pop(context); // drawer close
+                        Navigator.pop(context); // chat close
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -131,23 +129,24 @@ class _ChatScreenState extends State<ChatScreen> {
           color: kWhiteColor,
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: IconButton(
-              onPressed: () {
-                showConfirmationDialog(context, "Clear",
-                    "Are you sure want to clear chat history?", () {
-                  clearHistoryById(widget.sessionId).then((value) {
-                    if (!value) return;
-                    Navigator.of(context).pop();
-                    history = [];
-                    refresh();
+          if (history.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: IconButton(
+                onPressed: () {
+                  showConfirmationDialog(context, "Clear",
+                      "Are you sure want to clear chat history?", () {
+                    clearHistoryById(widget.sessionId).then((value) {
+                      if (!value) return;
+                      Navigator.of(context).pop();
+                      history = [];
+                      refresh();
+                    });
                   });
-                });
-              },
-              icon: const Icon(Icons.delete_rounded),
+                },
+                icon: const Icon(Icons.delete_rounded),
+              ),
             ),
-          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: IconButton(
@@ -165,19 +164,21 @@ class _ChatScreenState extends State<ChatScreen> {
             Expanded(
               child: Row(
                 children: [
-                  Flexible(
-                    flex: 3,
-                    child: buildFileStats(),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 10, bottom: 4, left: 8),
-                    child: VerticalDivider(
-                      thickness: 1,
-                      indent: 4,
-                      endIndent: 4,
-                      color: Colors.grey,
+                  if (fileList.isNotEmpty)
+                    Flexible(
+                      flex: 3,
+                      child: buildFileStats(),
                     ),
-                  ),
+                  if (fileList.isNotEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 10, bottom: 4, left: 8),
+                      child: VerticalDivider(
+                        thickness: 1,
+                        indent: 4,
+                        endIndent: 4,
+                        color: Colors.grey,
+                      ),
+                    ),
                   Flexible(
                     flex: 8,
                     child: buildChatList(),
@@ -208,168 +209,168 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget buildFileStats() {
-    return fileList.isNotEmpty
-        ? SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (List<String> file in fileList)
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(top: 10, bottom: 10, left: 10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(164, 31, 30, 36),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Colors.white24,
-                          width: 0.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            spreadRadius: 1,
-                            blurRadius: 2,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: Flexible(
-                        child: Column(
-                          children: [
-                            Text(
-                              file[1],
-                              style: kWhiteText.copyWith(
-                                  fontSize: 16, fontWeight: kSemiBold),
-                            ),
-                            const SizedBox(height: 4),
-                            ImageWidget(
-                              url: getPdfThumbUrl(file[0]),
-                              fit: BoxFit.scaleDown,
-                            ),
-                            const SizedBox(height: 8),
-                            FutureBuilder<Map>(
-                              future: getFileStats(file[0]),
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return const CircularProgressIndicator(
-                                    color: Colors.white,
-                                  );
-                                } else if (snapshot.hasError) {
-                                  debugPrint(snapshot.error.toString());
-                                  return const SizedBox();
-                                } else {
-                                  Row getStatField(String key, dynamic value) {
-                                    return Row(
-                                      children: [
-                                        Text(
-                                          "$key: ",
-                                          style: const TextStyle(
-                                            color: Colors.blue,
-                                            fontStyle: FontStyle.italic,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        Text(
-                                          value.toString(),
-                                          style: const TextStyle(
-                                            color: Colors.green,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  }
-
-                                  final stats = snapshot.data!;
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      for (var key in stats.keys)
-                                        getStatField(key, stats[key]!),
-                                    ],
-                                  );
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+    if (fileList.isEmpty) {
+      return Center(
+        child: Text(
+          "No files found!",
+          style: kWhiteText,
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (List<String> file in fileList)
+            Padding(
+              padding: const EdgeInsets.only(top: 10, bottom: 10, left: 10),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(164, 31, 30, 36),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.white24,
+                    width: 0.5,
                   ),
-              ],
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      spreadRadius: 1,
+                      blurRadius: 2,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Flexible(
+                  child: Column(
+                    children: [
+                      Text(
+                        file[1],
+                        style: kWhiteText.copyWith(
+                            fontSize: 16, fontWeight: kSemiBold),
+                      ),
+                      const SizedBox(height: 4),
+                      ImageWidget(
+                        url: getPdfThumbUrl(file[0]),
+                        fit: BoxFit.scaleDown,
+                      ),
+                      const SizedBox(height: 8),
+                      FutureBuilder<Map>(
+                        future: getFileStats(file[0]),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const CircularProgressIndicator(
+                              color: Colors.white,
+                            );
+                          } else if (snapshot.hasError) {
+                            debugPrint(snapshot.error.toString());
+                            return const SizedBox();
+                          } else {
+                            Row getStatField(String key, dynamic value) {
+                              return Row(
+                                children: [
+                                  Text(
+                                    "$key: ",
+                                    style: kWhiteText.copyWith(
+                                      color: Colors.blue,
+                                      fontStyle: FontStyle.italic,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    value.toString(),
+                                    style: kWhiteText.copyWith(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }
+
+                            final stats = snapshot.data!;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                for (var key in stats.keys)
+                                  getStatField(key, stats[key]!),
+                              ],
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          )
-        : Center(
-            child: Text(
-              "No files found!",
-              style: kWhiteText,
-              textAlign: TextAlign.center,
-            ),
-          );
+        ],
+      ),
+    );
   }
 
   Widget buildChatList() {
-    return history.isNotEmpty
-        ? RawScrollbar(
-            thumbVisibility: true,
-            trackVisibility: true,
-            thumbColor: kWhiteColor,
-            trackColor: kBg100Color,
-            radius: const Radius.circular(4),
-            trackRadius: const Radius.circular(4),
-            controller: scrollController,
-            child: ListView.separated(
-              controller: scrollController,
-              separatorBuilder: (context, index) => const SizedBox(
-                height: 12,
-              ),
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(
-                  bottom: 20, left: 16, right: 16, top: 16),
-              itemCount: history.length,
-              itemBuilder: (BuildContext context, int index) {
-                final thishistory = history[index];
-                final isUser = thishistory['role'] == 'user';
-                String msg = "";
-                Map sources = {};
-                List images = [];
+    if (history.isEmpty) {
+      return Center(
+        child: Text(
+          "No chat history, start asking questions!",
+          style: kWhiteText,
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+    return RawScrollbar(
+      thumbVisibility: true,
+      trackVisibility: true,
+      thumbColor: kWhiteColor,
+      trackColor: kBg100Color,
+      radius: const Radius.circular(4),
+      trackRadius: const Radius.circular(4),
+      controller: scrollController,
+      child: ListView.separated(
+        controller: scrollController,
+        separatorBuilder: (context, index) => const SizedBox(
+          height: 12,
+        ),
+        physics: const BouncingScrollPhysics(),
+        padding:
+            const EdgeInsets.only(bottom: 20, left: 16, right: 16, top: 16),
+        itemCount: history.length,
+        itemBuilder: (BuildContext context, int index) {
+          final thishistory = history[index];
+          final isUser = thishistory['role'] == 'user';
+          String msg = "";
+          Map sources = {};
+          List images = [];
 
-                if (isUser) {
-                  msg = thishistory['message']!;
-                } else {
-                  final jsondata = jsonDecode(thishistory['message']!);
-                  msg = jsondata['results'];
-                  sources = jsondata['source'];
-                  images = jsondata['images'] ?? jsondata['imgs'];
-                }
+          if (isUser) {
+            msg = thishistory['message']!;
+          } else {
+            final jsondata = jsonDecode(thishistory['message']!);
+            msg = jsondata['results'];
+            sources = jsondata['source'];
+            images = jsondata['images'] ?? jsondata['imgs'];
+          }
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    isUser
-                        ? UserQuestionWidget(question: msg)
-                        : AnswerWidget(
-                            answer: msg,
-                            sources: sources,
-                            images: images,
-                          ),
-                  ],
-                );
-              },
-            ),
-          )
-        : Center(
-            child: Text(
-              "No chat history, start asking questions!",
-              style: kWhiteText,
-              textAlign: TextAlign.center,
-            ),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              isUser
+                  ? UserQuestionWidget(question: msg)
+                  : AnswerWidget(
+                      answer: msg,
+                      sources: sources,
+                      images: images,
+                    ),
+            ],
           );
+        },
+      ),
+    );
   }
 
   void _scrollToBottom() {
